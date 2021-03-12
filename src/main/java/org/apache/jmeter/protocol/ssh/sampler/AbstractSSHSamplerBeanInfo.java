@@ -29,21 +29,21 @@ public abstract class AbstractSSHSamplerBeanInfo extends BeanInfoSupport {
 
         createPropertyGroup("server", // $NON-NLS-1$
                 new String[]{
-                    "hostname", // $NON-NLS-1$
-                    "port", // $NON-NLS-1$
-                    "connectionTimeout"
+                        "hostname", // $NON-NLS-1$
+                        "port", // $NON-NLS-1$
+                        "connectionTimeout"
                 });
 
         createPropertyGroup("user", // $NON-NLS-1$
                 new String[]{
-                    "username", // $NON-NLS-1$
-                    "password" // $NON-NLS-1$
+                        "username", // $NON-NLS-1$
+                        "password" // $NON-NLS-1$
                 });
 
         createPropertyGroup("keyFile",
                 new String[]{
-                    "sshkeyfile", // $NON-NLS-1$
-                    "passphrase" // $NON-NLS-1$
+                        "sshkeyfile", // $NON-NLS-1$
+                        "passphrase" // $NON-NLS-1$
                 });
 
         PropertyDescriptor p;

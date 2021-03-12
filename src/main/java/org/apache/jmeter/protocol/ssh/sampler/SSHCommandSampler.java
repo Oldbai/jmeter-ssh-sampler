@@ -20,9 +20,11 @@ package org.apache.jmeter.protocol.ssh.sampler;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
@@ -31,12 +33,11 @@ import org.apache.log.Logger;
 /**
  * SSH Sampler that collects single lines of output and returns
  * them as samples.
- *
  */
 public class SSHCommandSampler extends AbstractSSHSampler {
-    
+
     private static final Logger log = LoggingManager.getLoggerForClass();
-    
+
     private String command = "date";
     private boolean useReturnCode = true;
     private boolean useTty = true;
@@ -45,14 +46,14 @@ public class SSHCommandSampler extends AbstractSSHSampler {
     public SSHCommandSampler() {
         super("SSH Command Sampler");
     }
-    
+
     /**
      * Returns last line of output from the command
      */
+    @Override
     public SampleResult sample(Entry e) {
         SampleResult res = new SampleResult();
         res.setSampleLabel(getName() + ":(" + getUsername() + "@" + getHostname() + ":" + getPort() + ")");
-
 
 
         // Set up sampler return types
@@ -76,9 +77,9 @@ public class SSHCommandSampler extends AbstractSSHSampler {
             response = doCommand(getSession(), command, res);
             res.setResponseData(response.getBytes());
 
-            if(useReturnCode){
+            if (useReturnCode) {
                 res.setSuccessful("0".equals(res.getResponseCode()));
-            }else{
+            } else {
                 res.setSuccessful(true);
             }
 
@@ -105,15 +106,15 @@ public class SSHCommandSampler extends AbstractSSHSampler {
 
     /**
      * Executes a the given command inside a short-lived channel in the session.
-     * 
+     * <p>
      * Performance could be likely improved by reusing a single channel, though
      * the gains would be minimal compared to sharing the Session.
-     *  
+     *
      * @param session Session in which to create the channel
      * @param command Command to send to the server for execution
      * @return All standard output from the command
-     * @throws JSchException 
-     * @throws IOException Error has occurred down in the network layer
+     * @throws JSchException
+     * @throws IOException   Error has occurred down in the network layer
      */
     private String doCommand(Session session, String command, SampleResult res) throws JSchException, IOException {
         StringBuilder sb = new StringBuilder();
@@ -126,43 +127,47 @@ public class SSHCommandSampler extends AbstractSSHSampler {
         res.sampleStart();
         channel.connect();
 
-        if(printStdErr){
+        if (printStdErr) {
             sb.append("=== stdin ===\n\n");
         }
-        
+
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             sb.append(line);
             sb.append("\n");
         }
-        
-        if(printStdErr){
+
+        if (printStdErr) {
             sb.append("\n\n=== stderr ===\n\n");
             for (String line = err.readLine(); line != null; line = err.readLine()) {
                 sb.append(line);
                 sb.append("\n");
             }
         }
-        
+
         while (true) {
             if (channel.isClosed()) {
                 break;
             }
-            try {Thread.sleep(100);} catch (Exception ee){};
+            try {
+                Thread.sleep(100);
+            } catch (Exception ee) {
+            }
+            ;
         }
 
-        if(useReturnCode){
+        if (useReturnCode) {
             res.setResponseCode(String.valueOf(channel.getExitStatus()));
-        }else{
+        } else {
             res.setResponseCodeOK();
         }
-        
+
         res.sampleEnd();
-        
+
 
         channel.disconnect();
         return sb.toString();
     }
-    
+
     // Accessors
     public String getCommand() {
         return command;
@@ -171,7 +176,7 @@ public class SSHCommandSampler extends AbstractSSHSampler {
     public void setCommand(String command) {
         this.command = command;
     }
-    
+
     public boolean getPrintStdErr() {
         return printStdErr;
     }
@@ -195,5 +200,5 @@ public class SSHCommandSampler extends AbstractSSHSampler {
     public void setUseTty(boolean useTty) {
         this.useTty = useTty;
     }
-    
+
 }

@@ -33,7 +33,6 @@ import java.io.Serializable;
 /**
  * Abstract SSH Sampler that manage SSH connexion and delegates
  * sampling.
- *
  */
 public abstract class AbstractSSHSampler extends AbstractSampler implements TestBean {
 
@@ -45,7 +44,7 @@ public abstract class AbstractSSHSampler extends AbstractSampler implements Test
     private String sshkeyfile = "";
     private String passphrase = "";
     private int connectionTimeout = 5000;
-    
+
     private String failureReason = "Unknown";
     private static final JSch jsch = new JSch();
     private Session session = null;
@@ -158,10 +157,7 @@ public abstract class AbstractSSHSampler extends AbstractSampler implements Test
     public void setFailureReason(String failureReason) {
         this.failureReason = failureReason;
     }
-    
-    
-    
-    
+
 
     @Override
     public void finalize() {
@@ -190,6 +186,7 @@ public abstract class AbstractSSHSampler extends AbstractSampler implements Test
             this.owner = owner;
         }
 
+        @Override
         public String getPassphrase() {
             String retval = owner.getPassphrase();
             if ((retval.length() == 0) && !useKeyFile()) {
@@ -198,6 +195,7 @@ public abstract class AbstractSSHSampler extends AbstractSampler implements Test
             return retval;
         }
 
+        @Override
         public String getPassword() {
             String retval = owner.getPassword();
             if (retval.length() == 0) {
@@ -207,27 +205,32 @@ public abstract class AbstractSSHSampler extends AbstractSampler implements Test
         }
 
         /* Prompts/show should be taken care of by Jmeter */
+        @Override
         public boolean promptPassword(String message) {
             return true;
         }
 
+        @Override
         public boolean promptPassphrase(String message) {
             return true;
         }
 
+        @Override
         public boolean promptYesNo(String message) {
             return true;
         }
 
+        @Override
         public void showMessage(String message) {
             return;
         }
 
-        /* 
+        /*
          * These are not part of the UserInfo interface, but since this object can inspect its owner's data
          * it seems cleaner to just ask it to figure out what the user wants to do, rather than cluttering
          * the sampler code with this.
          */
+
         /**
          * useKeyFile returns true if owner.sshkeyfile is not empty
          */

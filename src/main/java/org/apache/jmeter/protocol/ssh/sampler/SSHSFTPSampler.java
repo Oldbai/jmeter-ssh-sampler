@@ -21,10 +21,12 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
@@ -33,7 +35,6 @@ import org.apache.log.Logger;
 /**
  * SSH Sampler that collects single lines of output and returns
  * them as samples.
- *
  */
 public class SSHSFTPSampler extends AbstractSSHSampler {
 
@@ -42,12 +43,14 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
     public static final String SFTP_COMMAND_PUT = "put";
     public static final String SFTP_COMMAND_RM = "rm";
     public static final String SFTP_COMMAND_RMDIR = "rmdir";
+    public static final String SFTP_COMMAND_MKDIR = "mkdir";
     public static final String SFTP_COMMAND_LS = "ls";
     public static final String SFTP_COMMAND_RENAME = "rename";
     private String source;
     private String destination;
     private String action;
     private boolean printFile = true;
+    private int sftpConnectionTimeout = 0;
 
     public SSHSFTPSampler() {
         super("SSH SFTP Sampler");
@@ -56,10 +59,10 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
     /**
      * Returns last line of output from the command
      */
+    @Override
     public SampleResult sample(Entry e) {
         SampleResult res = new SampleResult();
         res.setSampleLabel(getName() + ":(" + getUsername() + "@" + getHostname() + ":" + getPort() + ")");
-
 
 
         // Set up sampler return types
@@ -114,14 +117,13 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
 
     /**
      * Executes a the given command inside a short-lived channel in the session.
-     * 
+     * <p>
      * Performance could be likely improved by reusing a single channel, though
      * the gains would be minimal compared to sharing the Session.
-     *  
+     *
      * @param session Session in which to create the channel
-     * @param command Command to send to the server for execution
      * @return All standard output from the command
-     * @throws JSchException 
+     * @throws JSchException
      * @throws SftpException
      * @throws IOException
      */
@@ -130,7 +132,7 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
         ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
 
         res.sampleStart();
-        channel.connect();
+        channel.connect(sftpConnectionTimeout);
 
         if (SFTP_COMMAND_GET.equals(action)) {
 
@@ -157,7 +159,7 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
         } else if (SFTP_COMMAND_RMDIR.equals(action)) {
             channel.rmdir(src);
         } else if (SFTP_COMMAND_MKDIR.equals(action)) {
-        	channel.mkdir(src);
+            channel.mkdir(src);
         } else if (SFTP_COMMAND_RENAME.equals(action)) {
             channel.rename(src, dst);
         }
@@ -200,5 +202,13 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
 
     public void setPrintFile(boolean printFile) {
         this.printFile = printFile;
+    }
+
+    public int getSftpConnectionTimeout() {
+        return sftpConnectionTimeout;
+    }
+
+    public void setSftpConnectionTimeout(int sftpConnectionTimeout) {
+        this.sftpConnectionTimeout = sftpConnectionTimeout;
     }
 }
