@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.SampleResult;
@@ -46,6 +47,7 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
     public static final String SFTP_COMMAND_MKDIR = "mkdir";
     public static final String SFTP_COMMAND_LS = "ls";
     public static final String SFTP_COMMAND_RENAME = "rename";
+    public static final String SFTP_OTHER_WAIT = "wait";
     private String source;
     private String destination;
     private String action;
@@ -107,6 +109,10 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
             res.setSuccessful(false);
             res.setResponseCode("Connection Failed");
             res.setResponseMessage(e1.getMessage());
+        } catch (InterruptedException e1) {
+            res.setSuccessful(false);
+            res.setResponseCode("Thread wait Failed");
+            res.setResponseMessage(e1.getMessage());
         } finally {
             // Try a disconnect/sesson = null here instead of in finalize.
             disconnect();
@@ -127,7 +133,7 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
      * @throws SftpException
      * @throws IOException
      */
-    private String doFileTransfer(Session session, String src, String dst, SampleResult res) throws JSchException, SftpException, IOException {
+    private String doFileTransfer(Session session, String src, String dst, SampleResult res) throws JSchException, SftpException, IOException, InterruptedException {
         StringBuilder sb = new StringBuilder();
         ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
 
@@ -162,6 +168,9 @@ public class SSHSFTPSampler extends AbstractSSHSampler {
             channel.mkdir(src);
         } else if (SFTP_COMMAND_RENAME.equals(action)) {
             channel.rename(src, dst);
+        } else if (SFTP_OTHER_WAIT.equals(action)) {
+            final int waitTime = Integer.parseInt(src);
+            TimeUnit.MILLISECONDS.sleep(waitTime);
         }
 
         res.sampleEnd();
